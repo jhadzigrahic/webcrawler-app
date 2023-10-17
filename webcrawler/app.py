@@ -22,7 +22,7 @@ def scrape_site(url, text):
     page = urlopen(req)
 
     # Then parse it
-    soup = BeautifulSoup(page)
+    soup = BeautifulSoup(page, "html.parser")
 
     # Get all elements from the site that match 'text'
     html_lists = soup.find_all(string=re.compile(text))
@@ -60,19 +60,21 @@ def lambda_handler(event, context):
         if not attrFIT_value:
             scrape_value = not scrape_value
         if scrape_value:
+            # creating an e-mail message
             message = {
-            'default': 'Sistem je pronašao da imate match na adresi: ' + attrURL_value,
+            'default': 'Sistem found a match on the URL: ' + attrURL_value,
             'APNS': json.dumps({
                 'aps': {
-                    'alert': 'Sistem je pronašao da imate match na adresi: ' + attrURL_value
+                    'alert': 'Sistem found a match on the URL: ' + attrURL_value
                 }
             }),
             'APNS_SANDBOX': json.dumps({
                 'aps': {
-                    'alert': 'Sistem je pronašao da imate match na adresi: ' + attrURL_value
+                    'alert': 'Sistem found a match on the URL: ' + attrURL_value
                 }
             })
             }
+            #sending an e-mail message
             response = sns.publish(
                 TopicArn='arn:aws:sns:eu-west-1:574430779371:MyTestTopic',
                 Message=json.dumps(message),
@@ -80,4 +82,4 @@ def lambda_handler(event, context):
             )
             print(response)
     
-    logger.info('Data retrieved')
+    logger.info('Data retrieved!')
