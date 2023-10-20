@@ -43,9 +43,6 @@ def lambda_handler(event, context):
 
     # Get the all data from table_name
     x = table.scan()
-    
-    # Prepare the e-mail client
-    sns = boto3.client('sns')
 
     # Iterate through the results and parse data
     for item in x['Items']:
@@ -59,27 +56,15 @@ def lambda_handler(event, context):
 
         if not attrFIT_value:
             scrape_value = not scrape_value
+            
         if scrape_value:
-            # creating an e-mail message
-            message = {
-            'default': 'Sistem found a match on the URL: ' + attrURL_value,
-            'APNS': json.dumps({
-                'aps': {
-                    'alert': 'Sistem found a match on the URL: ' + attrURL_value
-                }
-            }),
-            'APNS_SANDBOX': json.dumps({
-                'aps': {
-                    'alert': 'Sistem found a match on the URL: ' + attrURL_value
-                }
-            })
-            }
-            #sending an e-mail message
+            # Prepare the e-mail client
+            sns = boto3.client('sns')
+            # creating and sending an e-mail message
             response = sns.publish(
                 TopicArn='arn:aws:sns:eu-west-1:574430779371:MyTestTopic',
-                Message=json.dumps(message),
-                MessageStructure='json'
+                Message = 'Sistem found a match on the URL: ' + attrURL_value,
+                Subject = 'You have an AWS webcrawler matching'
             )
-            print(response)
     
     logger.info('Data retrieved!')
