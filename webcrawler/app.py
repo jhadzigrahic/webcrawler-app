@@ -61,8 +61,9 @@ def lambda_handler(event, context):
             # Prepare the e-mail client
             sns = boto3.client('sns')
             # creating and sending an e-mail message
+            # The address of the TopicArn is generic. Please create your own TopicArn through AWS.
             response = sns.publish(
-                TopicArn='arn:aws:sns:eu-west-1:574430779371:MyTestTopic',
+                TopicArn='arn:aws:sns:eu-west-1:123456789101:MyTestTopic',
                 Message = 'Sistem found a match on the URL: ' + attrURL_value,
                 Subject = 'You have an AWS webcrawler matching'
             )
