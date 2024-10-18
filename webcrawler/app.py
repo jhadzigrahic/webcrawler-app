@@ -6,7 +6,7 @@ from datetime import date  # Built-in Python library
 import json  # Built-in Python library
 import boto3
 import re
-import os
+#import os
 import logging  # Built-in Python library
 
 # Configure logging
@@ -36,9 +36,10 @@ def lambda_handler(event, context):
         logger.info('Start data retriving...')
 
         # Prepare the DynamoDB client
-        dynamodb = boto3.resource("dynamodb")
-        table_name = os.environ["TABLE_NAME"]
-        table = dynamodb.Table(table_name)
+        dynamodb = boto3.resource('dynamodb')
+        #table_name = os.environ["crawler_data"]
+        #table = dynamodb.Table(table_name)
+        table = dynamodb.Table('crawler_data')
 
         # Get all data from table
         x = table.scan()
@@ -63,7 +64,7 @@ def lambda_handler(event, context):
                 # creating and sending an e-mail message
                 # The address of the TopicArn is generic. Please create your own TopicArn through AWS.
                 response = sns.publish(
-                    TopicArn='arn:aws:sns:eu-west-1:0123456789:MyTestTopic',
+                    TopicArn='arn:aws:sns:eu-west-1:574430779371:MyTestTopic',
                     Message = 'Sistem found a match on the URL: ' + attrURL_value,
                     Subject = 'You have an AWS webcrawler matching'
                 )
