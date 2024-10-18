@@ -6,7 +6,6 @@ from datetime import date  # Built-in Python library
 import json  # Built-in Python library
 import boto3
 import re
-#import os
 import logging  # Built-in Python library
 
 # Configure logging
@@ -37,37 +36,48 @@ def lambda_handler(event, context):
 
         # Prepare the DynamoDB client
         dynamodb = boto3.resource('dynamodb')
-        #table_name = os.environ["crawler_data"]
-        #table = dynamodb.Table(table_name)
         table = dynamodb.Table('crawler_data')
 
-        # Get all data from table
-        x = table.scan()
-
-        for item in x['Items']:
-            # Extract and process attributes
-            attrFIT_value = item['FIT']
-            attrTEXT_value = item['TEXT']
-            attrURL_value = item['URL']
-
-            # Scrape the website
-            scrape_value=scrape_site(url=attrURL_value, text=attrTEXT_value)
+        # Initialize variables for pagination
+        last_evaluated_key = None
+        while True:
+            # Perform a paginated scan
+            if last_evaluated_key:
+                response = table.scan(ExclusiveStartKey=last_evaluated_key)
+            else:
+                response = table.scan()  
             
-            # The FIT item is used to stop the execution of the function (if its value is FALSE), 
-            # because we are looking for data different from the TEXT item.
-            if not attrFIT_value:
-                scrape_value = not scrape_value
+            for item in response['Items']:
+                # Extract and process attributes
+                attrFIT_value = item['FIT']
+                attrTEXT_value = item['TEXT']
+                attrURL_value = item['URL']
+
+                # Scrape the website
+                scrape_value=scrape_site(url=attrURL_value, text=attrTEXT_value)
                 
-            if scrape_value:
-                # Prepare the SNS client and send the message
-                sns = boto3.client('sns')
-                # creating and sending an e-mail message
-                # The address of the TopicArn is generic. Please create your own TopicArn through AWS.
-                response = sns.publish(
-                    TopicArn='arn:aws:sns:eu-west-1:574430779371:MyTestTopic',
-                    Message = 'Sistem found a match on the URL: ' + attrURL_value,
-                    Subject = 'You have an AWS webcrawler matching'
-                )
+                # The FIT item is used to stop the execution of the function (if its value is FALSE), 
+                # because we are looking for data different from the TEXT item.
+                if not attrFIT_value:
+                    scrape_value = not scrape_value
+                    
+                if scrape_value:
+                    # Prepare the SNS client and send the message
+                    sns = boto3.client('sns')
+                    # creating and sending an e-mail message
+                    # The address of the TopicArn is generic. Please create your own TopicArn through AWS.
+                    response = sns.publish(
+                        TopicArn='arn:aws:sns:eu-west-1:574430779371:MyTestTopic',
+                        Message = 'Sistem found a match on the URL: ' + attrURL_value,
+                        Subject = 'You have an AWS webcrawler matching'
+                    )
+
+            # Update the last evaluated key
+            last_evaluated_key = response.get('LastEvaluatedKey')
+
+            # If there's no more data to retrieve, exit the loop
+            if not last_evaluated_key:
+                break
         
         logger.info('Data retrieval complete!')
     except Exception as e:
