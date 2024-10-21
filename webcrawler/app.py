@@ -36,7 +36,7 @@ def lambda_handler(event, context):
 
         # Prepare the DynamoDB client
         dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('crawler_data')
+        table = dynamodb.Table('TABLE_NAME')
 
         # Initialize variables for pagination
         last_evaluated_key = None
@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                     # creating and sending an e-mail message
                     # The address of the TopicArn is generic. Please create your own TopicArn through AWS.
                     response = sns.publish(
-                        TopicArn='arn:aws:sns:eu-west-1:574430779371:MyTestTopic',
+                        TopicArn='arn:aws:sns:eu-west-1:0123456789:MyTestTopic',
                         Message = 'Sistem found a match on the URL: ' + attrURL_value,
                         Subject = 'You have an AWS webcrawler matching'
                     )
