@@ -63,7 +63,7 @@ def lambda_handler(event, context):
 
         # Prepare the DynamoDB client
         dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('crawler_data')
+        table = dynamodb.Table('TABLE_NAME')
 
         # Initialize variables for pagination
         last_evaluated_key = None
@@ -87,7 +87,7 @@ def lambda_handler(event, context):
             for url, data in url_groups.items():
                 # Scrape the website with multiple texts
                 scrape_results = scrape_site_multiple(url=url, text_list=data['texts'])
-                
+
                 # Check results against FIT values
                 for result, fit in zip(scrape_results, data['fits']):
                     if (fit and result['found']) or (not fit and not result['found']):
